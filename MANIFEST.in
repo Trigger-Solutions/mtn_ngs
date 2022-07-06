@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include mtn_ngs *.css
+recursive-include mtn_ngs *.csv
+recursive-include mtn_ngs *.html
+recursive-include mtn_ngs *.ico
+recursive-include mtn_ngs *.js
+recursive-include mtn_ngs *.json
+recursive-include mtn_ngs *.md
+recursive-include mtn_ngs *.png
+recursive-include mtn_ngs *.py
+recursive-include mtn_ngs *.svg
+recursive-include mtn_ngs *.txt
+recursive-exclude mtn_ngs *.pyc

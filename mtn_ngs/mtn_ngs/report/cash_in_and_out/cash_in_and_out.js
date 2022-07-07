@@ -8,7 +8,8 @@ frappe.query_reports["Cash In and Out"] = {
 			label: __("Fiscal Year"),
 			fieldtype: "Link",
 			options: "Fiscal Year",
-			default: frappe.sys_defaults.fiscal_year
+			default: frappe.sys_defaults.fiscal_year,
+			reqd:1
 		},
 		{
 			fieldname: "company",
@@ -16,6 +17,7 @@ frappe.query_reports["Cash In and Out"] = {
 			fieldtype: "Link",
 			options: "Company",
 			default: frappe.defaults.get_user_default("Company"),
+			reqd:1
 		},
 	]
 }

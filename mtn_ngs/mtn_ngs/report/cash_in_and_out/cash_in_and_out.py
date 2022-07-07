@@ -8,14 +8,14 @@ from erpnext.accounts.report.financial_statements import get_period_list
 def execute(filters=None):
 	columns, data = [], []
 	period_list = get_period_list(filters.fiscal_year, filters.fiscal_year, '', '','Fiscal Year', "Monthly")
-	data = get_account_type()
-	get_opening(data,period_list[0]["year_end_date"])
-	get_monthes(data,period_list)
+	data = get_account_type(filters.company)
+	get_opening(data,period_list[0]["year_end_date"],filters.company)
+	get_monthes(data,period_list,filters.company)
 	columns = get_columns(period_list)
 	return columns, data
 
 
-def get_account_type():
+def get_account_type(company):
 	return( frappe.db.sql(f"""
 		Select
 			name
@@ -23,9 +23,11 @@ def get_account_type():
 			`tabAccount`
 		where
 			account_type in ("Cash","Bank")
+		and 
+			company = '{company}'	
 	""", as_dict=1))
 
-def get_opening(accounts,date):
+def get_opening(accounts,date,company):
 	for account in accounts:
 		opening = frappe.db.sql(f"""
 						Select 
@@ -37,6 +39,8 @@ def get_opening(accounts,date):
 						and 
 							is_cancelled = 0
 						and 
+							company = '{company}'
+						and 
 							posting_date between '2000-01-01'
 						and '{frappe.utils.add_days(date,-1)}';
 					""", as_dict=1)
@@ -44,7 +48,7 @@ def get_opening(accounts,date):
 	return accounts
 
 
-def get_monthes(accounts,period_list):
+def get_monthes(accounts,period_list,company):
 	for account in accounts:
 		for period in period_list:
 			monthes = frappe.db.sql(f"""
@@ -58,6 +62,8 @@ def get_monthes(accounts,period_list):
 								account = '{account.name}'
 							and 
 								is_cancelled = 0
+							and 
+								company = '{company}'
 							and 
 								posting_date between '{period['from_date']}'
 							and '{period['to_date']}';
@@ -74,6 +80,8 @@ def get_monthes(accounts,period_list):
 					account = '{account.name}'
 				and 
 					is_cancelled = 0
+				and 
+					company = '{company}'
 				and 
 					posting_date between '{period_list[0]['year_start_date']}'
 				and '{period_list[0]['year_end_date']}';

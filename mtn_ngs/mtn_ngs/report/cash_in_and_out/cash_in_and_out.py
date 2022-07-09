@@ -4,11 +4,17 @@
 import frappe
 from frappe import _
 from erpnext.accounts.report.financial_statements import get_period_list
-
+from console import console
 def execute(filters=None):
 	columns, data = [], []
-	period_list = get_period_list(filters.fiscal_year, filters.fiscal_year, '', '','Fiscal Year', "Monthly")
-	data = get_account_type(filters.company)
+	period_list = get_period_list(filters.fiscal_year, filters.fiscal_year, '', '','Fiscal Year', filters.period)
+	
+	if filters.account:
+		data=[{"name":filters.account}]
+		console(data).log()
+	else:
+		data = get_account_type(filters.company)
+		console(data).log()
 	get_opening(data,period_list[0]["year_end_date"],filters.company)
 	get_monthes(data,period_list,filters.company)
 	columns = get_columns(period_list)
@@ -53,13 +59,11 @@ def get_monthes(accounts,period_list,company):
 		for period in period_list:
 			monthes = frappe.db.sql(f"""
 							Select 
-								COALESCE(SUM(debit), 0)  as '{period.key + "_debit"}' ,
-								COALESCE(SUM(credit), 0)  as '{period.key + "_credit"}' ,
-								COALESCE(SUM(debit)-SUM(credit), 0 ) as '{period.key + "_balance"}' 
+								COALESCE(SUM(debit), 0)  as '{period.key + "_debit"}'
 							from 
 								`tabGL Entry` 
 							where 
-								account = '{account.name}'
+								account = '{account["name"]}'
 							and 
 								is_cancelled = 0
 							and 
@@ -71,13 +75,11 @@ def get_monthes(accounts,period_list,company):
 			account.update(monthes[0])
 		total_monthes = frappe.db.sql(f"""
 				Select 
-					COALESCE(SUM(debit), 0) as 'total_debit' ,
-					COALESCE(SUM(credit), 0) as 'total_credit' ,
-					COALESCE(SUM(debit)-SUM(credit), 0 ) as 'total_balance' 
+					COALESCE(SUM(debit), 0) as 'total_debit' 
 				from 
 					`tabGL Entry` 
 				where 
-					account = '{account.name}'
+					account = '{account["name"]}'
 				and 
 					is_cancelled = 0
 				and 
@@ -117,22 +119,22 @@ def get_columns(period_list):
 			"width": 150,
 			'default': 0.0
 		})
-		columns.append({
-			"fieldname": period.key +  "_credit",
-			"label": period.label +  "(Credit)",
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 150,
-			'default': 0.0
-		})
-		columns.append({
-			"fieldname": period.key + "_balance",
-			"label": period.label + "(Balance)",
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 150,
-			'default': 0.0
-		})
+		# columns.append({
+		# 	"fieldname": period.key +  "_credit",
+		# 	"label": period.label +  "(Credit)",
+		# 	"fieldtype": "Currency",
+		# 	"options": "currency",
+		# 	"width": 150,
+		# 	'default': 0.0
+		# })
+		# columns.append({
+		# 	"fieldname": period.key + "_balance",
+		# 	"label": period.label + "(Balance)",
+		# 	"fieldtype": "Currency",
+		# 	"options": "currency",
+		# 	"width": 150,
+		# 	'default': 0.0
+		# })
 	
 	columns.append({
 			"fieldname":"total_debit",
@@ -142,22 +144,22 @@ def get_columns(period_list):
 			"width": 150,
 			'default': 0.0
 		})
-	columns.append({
-		"fieldname":"total_credit",
-		"label": "Total Credit",
-		"fieldtype": "Currency",
-		"options": "currency",
-		"width": 150,
-		'default': 0.0
-	})
-	columns.append({
-		"fieldname": "total_balance",
-		"label": "Total Balance",
-		"fieldtype": "Currency",
-		"options": "currency",
-		"width": 150,
-		'default': 0.0
-	})
+	# columns.append({
+	# 	"fieldname":"total_credit",
+	# 	"label": "Total Credit",
+	# 	"fieldtype": "Currency",
+	# 	"options": "currency",
+	# 	"width": 150,
+	# 	'default': 0.0
+	# })
+	# columns.append({
+	# 	"fieldname": "total_balance",
+	# 	"label": "Total Balance",
+	# 	"fieldtype": "Currency",
+	# 	"options": "currency",
+	# 	"width": 150,
+	# 	'default': 0.0
+	# })
 
 	return columns
 

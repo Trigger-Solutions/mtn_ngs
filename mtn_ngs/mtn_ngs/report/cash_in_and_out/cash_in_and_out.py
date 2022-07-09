@@ -4,17 +4,14 @@
 import frappe
 from frappe import _
 from erpnext.accounts.report.financial_statements import get_period_list
-from console import console
 def execute(filters=None):
 	columns, data = [], []
 	period_list = get_period_list(filters.fiscal_year, filters.fiscal_year, '', '','Fiscal Year', filters.period)
 	
 	if filters.account:
 		data=[{"name":filters.account}]
-		console(data).log()
 	else:
 		data = get_account_type(filters.company)
-		console(data).log()
 	get_opening(data,period_list[0]["year_end_date"],filters.company)
 	get_monthes(data,period_list,filters.company)
 	columns = get_columns(period_list)
